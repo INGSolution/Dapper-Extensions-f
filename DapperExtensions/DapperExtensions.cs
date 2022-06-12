@@ -80,18 +80,19 @@ namespace DapperExtensions
         {
             get
             {
-                if (_instance == null)
-                {
-                    lock (_lock)
-                    {
-                        if (_instance == null)
-                        {
-                            _instance = InstanceFactory(_configuration);
-                        }
-                    }
-                }
+                return new DapperAsyncImplementor(new SqlGeneratorImpl(_configuration));
+                //if (_instance == null)
+                //{
+                //    lock (_lock)
+                //    {
+                //        if (_instance == null)
+                //        {
+                //            _instance = InstanceFactory(_configuration);
+                //        }
+                //    }
+                //}
 
-                return _instance;
+                //return _instance;
             }
         }
 
