@@ -2,12 +2,12 @@
 using DapperExtensions.Predicate;
 using DapperExtensions.Sql;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using static DapperExtensions.Snapshotter;
 
 namespace DapperExtensions
 {
@@ -80,7 +80,7 @@ namespace DapperExtensions
         {
             get
             {
-                return new DapperAsyncImplementor(new SqlGeneratorImpl(_configuration));
+                return new DapperImplementor(new SqlGeneratorImpl(_configuration));
                 //if (_instance == null)
                 //{
                 //    lock (_lock)
@@ -136,9 +136,17 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T
         /// </summary>
-        public static T Get<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null) where T : class
+        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false) where T : class
         {
-            return (T)Instance.Get<T>(connection, id, transaction, commandTimeout);
+            return ((T, Snapshot<T>))Instance.Get<T>(connection, id, transaction, commandTimeout, changeTrack:changeTrack);
+        }
+
+        /// <summary>
+        /// Executes a query for the specified id, returning the data typed as per T
+        /// </summary>
+        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, PredicateGroup predicate, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false) where T : class
+        {
+            return ((T, Snapshot<T>))Instance.Get<T>(connection, predicate, transaction, commandTimeout, changeTrack: changeTrack);
         }
 
         /// <summary>
@@ -171,9 +179,9 @@ namespace DapperExtensions
         /// <summary>
         /// Executes an update query for the specified entity.
         /// </summary>
-        public static bool Update<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false) where T : class
+        public static bool Update<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : class
         {
-            return Instance.Update(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties);
+            return Instance.Update(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, snapshot);
         }
 
         /// <summary>

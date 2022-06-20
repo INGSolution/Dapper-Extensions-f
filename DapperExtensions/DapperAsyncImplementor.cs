@@ -2,10 +2,12 @@
 using DapperExtensions.Mapper;
 using DapperExtensions.Predicate;
 using DapperExtensions.Sql;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using static DapperExtensions.Snapshotter;
 using AutoMapper = Slapper.AutoMapper;
 
 namespace DapperExtensions
@@ -18,8 +20,13 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
         /// </summary>
-        Task<T> GetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
-            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class;
+        Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class;
+        /// <summary>
+        /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
+        /// </summary>
+        Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, PredicateGroup predicates, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetList{T}"/>.
         /// </summary>
@@ -61,7 +68,7 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Update{T}(IDbConnection, T, IDbTransaction, int?)"/>.
         /// </summary>
-        Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, IList<IProjection> colsToUpdate = null) where T : class;
+        Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, IList<IProjection> colsToUpdate = null, Snapshot<T> snapshot = null) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Delete{T}(IDbConnection, T, IDbTransaction, int?)"/>.
         /// </summary>
@@ -116,8 +123,11 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Update{T}(IDbConnection, T, IDbTransaction, int?)"/>.
         /// </summary>
-        public async Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate = null) where T : class
+        public async Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate = null, Snapshot<T> snapshot = null) where T : class
         {
+            if(colsToUpdate == null)
+                colsToUpdate = GetChangeTrackCols<T>(snapshot);
+
             return await InternalUpdateAsync(connection, entity, transaction, colsToUpdate, commandTimeout, ignoreAllKeyProperties);
         }
         /// <summary>
@@ -137,10 +147,18 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
         /// </summary>
-        public async Task<T> GetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
-            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class
+        public async Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class
         {
-            return await Task.FromResult((T)InternalGet<T>(connection, id, transaction, commandTimeout, colsToSelect, includedProperties));
+            return await Task.FromResult(((T, Snapshot<T>))InternalGet<T>(connection, id, transaction, commandTimeout, colsToSelect, includedProperties, changeTrack));
+        }
+        /// <summary>
+        /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
+        /// </summary>
+        public async Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, PredicateGroup predicates, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class
+        {
+            return await Task.FromResult(((T, Snapshot<T>))InternalGetPredicate<T>(connection, predicates, transaction, commandTimeout, colsToSelect, includedProperties, changeTrack));
         }
 
         /// <summary>

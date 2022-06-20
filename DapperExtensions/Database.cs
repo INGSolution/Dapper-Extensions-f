@@ -201,12 +201,12 @@ namespace DapperExtensions
 
         public virtual T Get<T>(dynamic id, IDbTransaction transaction, int? commandTimeout) where T : class
         {
-            return (T)_dapper.Get<T>(Connection, id, transaction, commandTimeout);
+            return (T)_dapper.Get<T>(Connection, id, transaction, commandTimeout, null);
         }
 
         public virtual T Get<T>(dynamic id, int? commandTimeout) where T : class
         {
-            return (T)_dapper.Get<T>(Connection, id, _transaction, commandTimeout);
+            return (T)_dapper.Get<T>(Connection, id, _transaction, commandTimeout, null);
         }
 
         public virtual void Insert<T>(IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout) where T : class
@@ -343,6 +343,16 @@ namespace DapperExtensions
         {
             return await _dapper.GetAsync<T>(Connection, id, _transaction, commandTimeout);
         }
+
+        //public async virtual Task<T> Get<T>(PredicateGroup predicates, IDbTransaction transaction, int? commandTimeout) where T : class
+        //{
+        //    return await _dapper.GetAsync<T>(Connection, predicates, transaction, commandTimeout);
+        //}
+
+        //public async virtual Task<T> Get<T>(PredicateGroup predicates, int? commandTimeout) where T : class
+        //{
+        //    return await _dapper.GetAsync<T>(Connection, predicates, _transaction, commandTimeout);
+        //}
 
         public async virtual void Insert<T>(IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout) where T : class
         {

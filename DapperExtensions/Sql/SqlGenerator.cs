@@ -292,7 +292,7 @@ namespace DapperExtensions.Sql
             }
 
             var setSql = columns
-                .Where(c => colsToUpdate == null || colsToUpdate?.Any(cu => cu.PropertyName.Equals(c.Property.ColumnName, StringComparison.OrdinalIgnoreCase)) == true)
+                .Where(c => colsToUpdate == null || colsToUpdate?.Any(cu => cu.PropertyName.Equals(c.Property.Name, StringComparison.OrdinalIgnoreCase)) == true) // Use Property.Name instead of ColumnName
                 .Select(p => $"{GetColumnName(p, false, false)} = {p.SimpleAlias}");
 
             return $"UPDATE {GetTableName(classMap)} SET {setSql.AppendStrings()} WHERE {predicate.GetSql(this, parameters, true)}";

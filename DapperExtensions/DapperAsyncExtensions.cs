@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using static DapperExtensions.Snapshotter;
 
 namespace DapperExtensions
 {
@@ -170,16 +171,25 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T.
         /// </summary>
-        public static async Task<T> GetAsync<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool buffered = false) where T : class
+        public static async Task<(T, Snapshot<T>)> GetAsync<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null,
+            int? commandTimeout = null, bool buffered = false, bool changeTrack = false) where T : class
         {
-            return await Instance.GetAsync<T>(connection, id, transaction, commandTimeout, buffered, null).ConfigureAwait(false);
+            return await Instance.GetAsync<T>(connection, id, transaction, commandTimeout, buffered, null, changeTrack: changeTrack).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T.
         /// </summary>
-        public static async Task<TOut> GetPartialAsync<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func,
+        public static async Task<(T, Snapshot<T>)> GetAsync<T>(this IDbConnection connection, PredicateGroup predicates, Snapshot<T> snapshot, IDbTransaction transaction = null,
+            int? commandTimeout = null, bool buffered = false, bool changeTrack = false) where T : class
+        {
+            return await Instance.GetAsync<T>(connection, predicates, transaction, commandTimeout, buffered, null, changeTrack: changeTrack).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Executes a query for the specified id, returning the data typed as per T.
+        /// </summary>
+        public static async Task<TOut> GetPartialAsync<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func, Snapshot<TIn> snapshot,
             IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
@@ -243,9 +253,9 @@ namespace DapperExtensions
         /// Executes an update query for the specified entity.
         /// </summary>
         public static Task<bool> UpdateAsync<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool ignoreAllKeyProperties = false) where T : class
+            int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : class
         {
-            return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, null);
+            return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, null, snapshot);
         }
 
         /// <summary>
