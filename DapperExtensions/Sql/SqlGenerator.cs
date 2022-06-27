@@ -163,6 +163,10 @@ namespace DapperExtensions.Sql
                 throw new ArgumentNullException(nameof(parameters), $"{nameof(parameters)} cannot be null.");
             }
 
+            MapTables(classMap);
+
+            AllColumns = GetColumns().ToList();
+
             var sql = new StringBuilder();
 
             if (includedProperties?.Count > 0 && Configuration.Dialect.SupportsCountOfSubquery)
