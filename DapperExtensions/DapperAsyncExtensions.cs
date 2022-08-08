@@ -180,7 +180,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T.
         /// </summary>
-        public static async Task<(T, Snapshot<T>)> GetAsync<T>(this IDbConnection connection, PredicateGroup predicates, Snapshot<T> snapshot, IDbTransaction transaction = null,
+        public static async Task<(T, Snapshot<T>)> GetAsync<T>(this IDbConnection connection, PredicateGroup predicates, IDbTransaction transaction = null,
             int? commandTimeout = null, bool buffered = false, bool changeTrack = false) where T : class
         {
             return await Instance.GetAsync<T>(connection, predicates, transaction, commandTimeout, buffered, null, changeTrack: changeTrack).ConfigureAwait(false);
@@ -189,7 +189,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T.
         /// </summary>
-        public static async Task<TOut> GetPartialAsync<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func, Snapshot<TIn> snapshot,
+        public static async Task<TOut> GetPartialAsync<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func,
             IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class where TOut : class
         {
             var cols = GetBufferedCols<TOut>();

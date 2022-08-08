@@ -29,6 +29,7 @@ namespace DapperExtensions
     {
         private readonly ConcurrentDictionary<Type, SqlInjection> _sqlInjections = new ConcurrentDictionary<Type, SqlInjection>();
         private readonly ConcurrentDictionary<Type, IClassMapper> _classMaps = new ConcurrentDictionary<Type, IClassMapper>();
+        private static object _lockClassMaps = new object();
 
         public DapperExtensionsConfiguration()
             : this(typeof(AutoClassMapper<>), new List<Assembly>(), new SqlServerDialect())
@@ -52,10 +53,16 @@ namespace DapperExtensions
         {
             if (!_classMaps.TryGetValue(entityType, out IClassMapper map))
             {
-                var mapType = GetMapType(entityType) ?? DefaultMapper.MakeGenericType(entityType);
+                lock (_lockClassMaps)
+                {
+                    if (!_classMaps.TryGetValue(entityType, out map))
+                    {
+                        var mapType = GetMapType(entityType) ?? DefaultMapper.MakeGenericType(entityType);
 
-                map = Activator.CreateInstance(mapType) as IClassMapper;
-                _classMaps[entityType] = map;
+                        map = Activator.CreateInstance(mapType) as IClassMapper;
+                        _classMaps[entityType] = map;
+                    }
+                }
             }
 
             return map;
