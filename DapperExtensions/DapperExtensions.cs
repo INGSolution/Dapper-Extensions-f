@@ -136,25 +136,25 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T
         /// </summary>
-        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false) where T : class
+        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false, bool noLock = false) where T : class
         {
-            return ((T, Snapshot<T>))Instance.Get<T>(connection, id, transaction, commandTimeout, changeTrack:changeTrack);
+            return ((T, Snapshot<T>))Instance.Get<T>(connection, id, transaction, commandTimeout, changeTrack: changeTrack, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T
         /// </summary>
-        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, PredicateGroup predicate, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false) where T : class
+        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, PredicateGroup predicate, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false, bool noLock = false) where T : class
         {
-            return ((T, Snapshot<T>))Instance.Get<T>(connection, predicate, transaction, commandTimeout, changeTrack: changeTrack);
+            return ((T, Snapshot<T>))Instance.Get<T>(connection, predicate, transaction, commandTimeout, changeTrack: changeTrack, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T
         /// </summary>
-        public static TOut GetPartial<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null) where TIn : class where TOut : class
+        public static TOut GetPartial<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null, bool noLock = false) where TIn : class where TOut : class
         {
-            return Instance.GetPartial<TIn, TOut>(connection, func, id, transaction, commandTimeout);
+            return Instance.GetPartial<TIn, TOut>(connection, func, id, transaction, commandTimeout, noLock: noLock);
         }
 
         /// <summary>
@@ -235,92 +235,92 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// </summary>
-        public static IEnumerable<T> GetList<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where T : class
+        public static IEnumerable<T> GetList<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
         {
-            return Instance.GetList<T>(connection, predicate, sort, transaction, commandTimeout, buffered);
+            return Instance.GetList<T>(connection, predicate, sort, transaction, commandTimeout, buffered, noLock:noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per LINq Expression.
         /// </summary>
-        public static IEnumerable<TOut> GetPartialList<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class
+        public static IEnumerable<TOut> GetPartialList<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class
         {
-            return Instance.GetPartialList(connection, func, predicate, sort, transaction, commandTimeout, buffered);
+            return Instance.GetPartialList(connection, func, predicate, sort, transaction, commandTimeout, buffered, noLock: noLock);
 
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T with relacionated classes.
         /// </summary>
-        public static IEnumerable<T> GetListAutoMap<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where T : class
+        public static IEnumerable<T> GetListAutoMap<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
         {
-            return Instance.GetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered);
+            return Instance.GetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T with relacionated classes.
         /// </summary>
-        public static IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class
+        public static IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class
         {
-            return Instance.GetPartialListAutoMap(connection, func, predicate, sort, transaction, commandTimeout, buffered);
+            return Instance.GetPartialListAutoMap(connection, func, predicate, sort, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// Data returned is dependent upon the specified page and resultsPerPage.
         /// </summary>
-        public static IEnumerable<T> GetPage<T>(this IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where T : class
+        public static IEnumerable<T> GetPage<T>(this IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
         {
-            return Instance.GetPage<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered);
+            return Instance.GetPage<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per LINq expression.
         /// Data returned is dependent upon the specified page and resultsPerPage.
         /// </summary>
-        public static IEnumerable<TOut> GetPartialPage<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class where TOut : class
+        public static IEnumerable<TOut> GetPartialPage<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class where TOut : class
         {
-            return Instance.GetPartialPage(connection, func, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered);
+            return Instance.GetPartialPage(connection, func, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
-        public static IEnumerable<T> GetPageAutoMap<T>(this IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where T : class
+        public static IEnumerable<T> GetPageAutoMap<T>(this IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
         {
-            return Instance.GetPageAutoMap<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered);
+            return Instance.GetPageAutoMap<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per LINq expression.
         /// Data returned is dependent upon the specified page and resultsPerPage.
         /// </summary>
-        public static IEnumerable<TOut> GetPartialPageAutoMap<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class where TOut : class
+        public static IEnumerable<TOut> GetPartialPageAutoMap<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class where TOut : class
         {
-            return Instance.GetPartialPageAutoMap(connection, func, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered);
+            return Instance.GetPartialPageAutoMap(connection, func, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// Data returned is dependent upon the specified firstResult and maxResults.
         /// </summary>
-        public static IEnumerable<T> GetSet<T>(this IDbConnection connection, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where T : class
+        public static IEnumerable<T> GetSet<T>(this IDbConnection connection, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
         {
-            return Instance.GetSet<T>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered);
+            return Instance.GetSet<T>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per LINq expression.
         /// Data returned is dependent upon the specified firstResult and maxResults.
         /// </summary>
-        public static IEnumerable<TOut> GetPartialSet<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false) where TIn : class where TOut : class
+        public static IEnumerable<TOut> GetPartialSet<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class where TOut : class
         {
-            return Instance.GetPartialSet(connection, func, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered);
+            return Instance.GetPartialSet(connection, func, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a query using the specified predicate, returning an integer that represents the number of rows that match the query.
         /// </summary>
-        public static int Count<T>(this IDbConnection connection, object predicate, IDbTransaction transaction = null, int? commandTimeout = null) where T : class
+        public static int Count<T>(this IDbConnection connection, object predicate, IDbTransaction transaction = null, int? commandTimeout = null, bool noLock = false) where T : class
         {
-            return Instance.Count<T>(connection, predicate, transaction, commandTimeout);
+            return Instance.Count<T>(connection, predicate, transaction, commandTimeout, noLock: noLock);
         }
 
         /// <summary>

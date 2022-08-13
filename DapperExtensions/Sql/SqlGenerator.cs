@@ -15,17 +15,17 @@ namespace DapperExtensions.Sql
         IList<Table> MappedTables { get; }
         bool SupportsMultipleStatements();
 
-        string Select(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null);
-        string SelectPaged(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null);
-        string SelectSet(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null);
-        string Count(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, IList<IReferenceMap> includedProperties = null);
+        string Select(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false);
+        string SelectPaged(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false);
+        string SelectSet(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false);
+        string Count(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, IList<IReferenceMap> includedProperties = null, bool noLock = false);
 
         string Insert(IClassMapper classMap);
         string Update(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate);
         string Delete(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters);
 
         string IdentitySql(IClassMapper classMap);
-        string GetTableName(IClassMapper map, bool useAlias = false);
+        string GetTableName(IClassMapper map, bool useAlias = false, bool noLock = false);
         string GetColumnName(IClassMapper map, IMemberMap property, bool includeAlias, bool isDml = false, bool includePrefix = true);
         string GetColumnName(IClassMapper map, string propertyName, bool includeAlias, bool includePrefix = true);
         string GetColumnName(IColumn column, bool includeAlias, bool includePrefix = true);
@@ -71,7 +71,7 @@ namespace DapperExtensions.Sql
             }
         }
 
-        public virtual string Select(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        public virtual string Select(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false)
         {
             if (parameters == null)
             {
@@ -84,7 +84,7 @@ namespace DapperExtensions.Sql
 
             var sql = new StringBuilder(string.Format("SELECT {0} FROM {1}",
                 BuildSelectColumns(classMap, colsToSelect, includedProperties),
-                GetTables(classMap, parameters, includedProperties)));
+                GetTables(classMap, parameters, includedProperties, noLock)));
 
             if (predicate != null)
             {
@@ -111,7 +111,7 @@ namespace DapperExtensions.Sql
             return sql.ToString();
         }
 
-        public virtual string SelectPaged(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        public virtual string SelectPaged(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false)
         {
             if (sort?.Any() != true)
             {
@@ -123,14 +123,14 @@ namespace DapperExtensions.Sql
                 throw new ArgumentNullException(nameof(parameters), $"{nameof(parameters)} cannot be null");
             }
 
-            var innerSql = new StringBuilder(Select(classMap, predicate, sort, parameters, colsToSelect, includedProperties));
+            var innerSql = new StringBuilder(Select(classMap, predicate, sort, parameters, colsToSelect, includedProperties, noLock));
 
             var partitionBy = GetPartitionBy();
 
             return Configuration.Dialect.GetPagingSql(innerSql.ToString(), page, resultsPerPage, parameters, partitionBy);
         }
 
-        public virtual string SelectSet(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null)
+        public virtual string SelectSet(IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDictionary<string, object> parameters, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false)
         {
             if (sort?.Any() != true)
             {
@@ -142,7 +142,7 @@ namespace DapperExtensions.Sql
                 throw new ArgumentNullException(nameof(parameters), $"{nameof(parameters)} cannot be null.");
             }
 
-            var innerSql = new StringBuilder($"SELECT {BuildSelectColumns(classMap, colsToSelect, includedProperties)} FROM {GetTables(classMap, parameters, includedProperties)}");
+            var innerSql = new StringBuilder($"SELECT {BuildSelectColumns(classMap, colsToSelect, includedProperties)} FROM {GetTables(classMap, parameters, includedProperties, noLock)}");
 
             if (predicate != null)
             {
@@ -156,7 +156,7 @@ namespace DapperExtensions.Sql
             return Configuration.Dialect.GetSetSql(innerSql.ToString(), firstResult, maxResults, parameters);
         }
 
-        public virtual string Count(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, IList<IReferenceMap> includedProperties = null)
+        public virtual string Count(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, IList<IReferenceMap> includedProperties = null, bool noLock = false)
         {
             if (parameters == null)
             {
@@ -174,7 +174,7 @@ namespace DapperExtensions.Sql
                 var countSql = new StringBuilder();
                 var resultSet = BuildSelectColumns(classMap, null, includedProperties);
 
-                sql.Append("SELECT ").Append(resultSet).Append(" FROM ").Append(GetTables(classMap, parameters, includedProperties));
+                sql.Append("SELECT ").Append(resultSet).Append(" FROM ").Append(GetTables(classMap, parameters, includedProperties, noLock));
 
                 if (predicate != null)
                 {
@@ -199,7 +199,7 @@ namespace DapperExtensions.Sql
             }
             else
             {
-                sql.Append(GetTables(classMap, parameters, includedProperties));
+                sql.Append(GetTables(classMap, parameters, includedProperties, noLock));
 
                 if (predicate != null)
                 {
@@ -458,7 +458,7 @@ namespace DapperExtensions.Sql
             return string.Format(sql, GetAliasFromTableName(map.Identity) + "." + columName);
         }
 
-        public virtual string GetTables(IClassMapper map, IDictionary<string, object> parameters, IList<IReferenceMap> includedProperties = null)
+        public virtual string GetTables(IClassMapper map, IDictionary<string, object> parameters, IList<IReferenceMap> includedProperties = null, bool noLock = false)
         {
             var _includeRelacionalEntities = includedProperties?.Count > 0;
 
@@ -469,7 +469,7 @@ namespace DapperExtensions.Sql
 
             var tableName = new StringBuilder();
 
-            var mainTableName = GetTableName(map, true);
+            var mainTableName = GetTableName(map, true, noLock);
             var joints = _includeRelacionalEntities ? GetAllJointTables(map, map.TableName, parameters, includedProperties: includedProperties) : "";
             var sqlInjection = GetJoinFromSqlInjection(Configuration.GetOrSetSqlInjection(map.EntityType));
 
@@ -484,9 +484,9 @@ namespace DapperExtensions.Sql
             return tableName.ToString();
         }
 
-        public virtual string GetTableName(IClassMapper map, bool useAlias = false)
+        public virtual string GetTableName(IClassMapper map, bool useAlias = false, bool noLock = false)
         {
-            return Configuration.Dialect.GetTableName(map.SchemaName, map.TableName, useAlias ? GetAliasFromTableName(map.Identity) : null);
+            return Configuration.Dialect.GetTableName(map.SchemaName, map.TableName, useAlias ? GetAliasFromTableName(map.Identity) : null, noLock);
         }
 
         public virtual string GetTableName(IClassMapper map, IColumn column)

@@ -16,7 +16,7 @@ namespace DapperExtensions.Sql
         bool SupportsCountOfSubquery { get; }
         char ParameterPrefix { get; }
         string EmptyExpression { get; }
-        string GetTableName(string schemaName, string tableName, string alias);
+        string GetTableName(string schemaName, string tableName, string alias, bool noLock = false);
         string GetColumnName(string prefix, string columnName, string alias);
         string GetIdentitySql(string tableName);
         string GetPagingSql(string sql, int page, int resultsPerPage, IDictionary<string, object> parameters, string partitionBy);
@@ -68,7 +68,7 @@ namespace DapperExtensions.Sql
 
         public virtual bool SupportsCountOfSubquery => true;
 
-        public virtual string GetTableName(string schemaName, string tableName, string alias)
+        public virtual string GetTableName(string schemaName, string tableName, string alias, bool noLock = false)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
@@ -87,6 +87,10 @@ namespace DapperExtensions.Sql
             {
                 result.AppendFormat(" {0}", QuoteString(alias));
             }
+
+            if (noLock)
+                result.AppendFormat(" WITH(NOLOCK)");
+
             return result.ToString();
         }
 

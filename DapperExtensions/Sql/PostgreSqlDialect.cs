@@ -40,9 +40,9 @@ namespace DapperExtensions.Sql
             return base.GetColumnName(prefix, columnName, alias).ToLower();
         }
 
-        public override string GetTableName(string schemaName, string tableName, string alias)
+        public override string GetTableName(string schemaName, string tableName, string alias, bool noLock = false)
         {
-            return base.GetTableName(schemaName, tableName, alias).ToLower();
+            return base.GetTableName(schemaName, tableName, alias, noLock).ToLower();
         }
 
         public override string GetDatabaseFunctionString(DatabaseFunction databaseFunction, string columnName, string functionParameters = "")

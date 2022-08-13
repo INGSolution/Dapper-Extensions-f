@@ -26,7 +26,7 @@ namespace DapperExtensions.Sql
 
         public override bool SupportsCountOfSubquery => false;
 
-        public override string GetTableName(string schemaName, string tableName, string alias)
+        public override string GetTableName(string schemaName, string tableName, string alias, bool noLock)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
@@ -42,11 +42,13 @@ namespace DapperExtensions.Sql
 
             result.AppendFormat("{0}{1}", tableName, CloseQuote);
 
-
             if (!string.IsNullOrWhiteSpace(alias))
             {
                 result.AppendFormat(" AS {0}{1}{2}", OpenQuote, alias, CloseQuote);
             }
+
+            if (noLock)
+                result.AppendFormat(" WITH(NOLOCK)");
 
             return result.ToString();
         }

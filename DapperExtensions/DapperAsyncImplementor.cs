@@ -2,7 +2,6 @@
 using DapperExtensions.Mapper;
 using DapperExtensions.Predicate;
 using DapperExtensions.Sql;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -21,41 +20,41 @@ namespace DapperExtensions
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
         /// </summary>
         Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
-            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class;
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
         /// </summary>
         Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, PredicateGroup predicates, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
-            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class;
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetList{T}"/>.
         /// </summary>
         Task<IEnumerable<T>> GetListAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class;
+            int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetListAutoMap{T}"/>.
         /// </summary>
         Task<IEnumerable<T>> GetListAutoMapAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class;
+            int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetPage{T}"/>.
         /// </summary>
         Task<IEnumerable<T>> GetPageAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, int page = 1, int resultsPerPage = 10,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class;
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetPageAutoMap{T}"/>.
         /// </summary>
         Task<IEnumerable<T>> GetPageAutoMapAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, int page = 1, int resultsPerPage = 10,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class;
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetSet{T}"/>.
         /// </summary>
         Task<IEnumerable<T>> GetSetAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, int firstResult = 1, int maxResults = 10,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class;
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Count{T}"/>.
         /// </summary>
-        Task<int> CountAsync<T>(IDbConnection connection, object predicate = null, IDbTransaction transaction = null, int? commandTimeout = null, IList<IReferenceMap> includedProperties = null) where T : class;
+        Task<int> CountAsync<T>(IDbConnection connection, object predicate = null, IDbTransaction transaction = null, int? commandTimeout = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class;
 
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Insert{T}(IDbConnection, IEnumerable{T}, IDbTransaction, int?)"/>.
@@ -148,68 +147,68 @@ namespace DapperExtensions
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
         /// </summary>
         public async Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
-            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : class
         {
-            return await Task.FromResult(((T, Snapshot<T>))InternalGet<T>(connection, id, transaction, commandTimeout, colsToSelect, includedProperties, changeTrack));
+            return await Task.FromResult(((T, Snapshot<T>))InternalGet<T>(connection, id, transaction, commandTimeout, colsToSelect, includedProperties, changeTrack, noLock));
         }
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Get{T}"/>.
         /// </summary>
         public async Task<(T, Snapshot<T>)> GetAsync<T>(IDbConnection connection, PredicateGroup predicates, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false,
-            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false) where T : class
+            IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : class
         {
-            return await Task.FromResult(((T, Snapshot<T>))InternalGetPredicate<T>(connection, predicates, transaction, commandTimeout, colsToSelect, includedProperties, changeTrack));
+            return await Task.FromResult(((T, Snapshot<T>))InternalGetPredicate<T>(connection, predicates, transaction, commandTimeout, colsToSelect, includedProperties, changeTrack, noLock));
         }
 
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetList{T}"/>.
         /// </summary>
         public async Task<IEnumerable<T>> GetListAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class
+            int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await InternalGetListAutoMapAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
+            return await InternalGetListAutoMapAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock);
         }
 
         public async Task<IEnumerable<T>> GetListAutoMapAsync<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout,
-            bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class
+            bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await InternalGetListAutoMapAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
+            return await InternalGetListAutoMapAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock);
         }
 
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetPage{T}"/>.
         /// </summary>
         public async Task<IEnumerable<T>> GetPageAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, int page = 1, int resultsPerPage = 10,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await InternalGetPageAutoMapAsync<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
+            return await InternalGetPageAutoMapAsync<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock);
         }
 
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetPageAutoMap{T}"/>.
         /// </summary>
         public async Task<IEnumerable<T>> GetPageAutoMapAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, int page = 1, int resultsPerPage = 10,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await InternalGetPageAutoMapAsync<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
+            return await InternalGetPageAutoMapAsync<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock);
         }
 
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetSet{T}"/>.
         /// </summary>
         public async Task<IEnumerable<T>> GetSetAsync<T>(IDbConnection connection, object predicate = null, IList<ISort> sort = null, int firstResult = 1, int maxResults = 10,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null) where T : class
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await InternalGetSetAsync<T>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, colsToSelect, includedProperties);
+            return await InternalGetSetAsync<T>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock);
         }
 
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Count{T}"/>.
         /// </summary>
         public async Task<int> CountAsync<T>(IDbConnection connection, object predicate = null, IDbTransaction transaction = null,
-            int? commandTimeout = null, IList<IReferenceMap> includedProperties = null) where T : class
+            int? commandTimeout = null, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await Task.FromResult(Count<T>(connection, predicate, transaction, commandTimeout, includedProperties));
+            return await Task.FromResult(Count<T>(connection, predicate, transaction, commandTimeout, includedProperties, noLock));
         }
 
         public async Task<IMultipleResultReader> GetMultipleAsync(IDbConnection connection, GetMultiplePredicate predicate, IDbTransaction transaction,
@@ -255,27 +254,27 @@ namespace DapperExtensions
                 await InternalUpdateAsync(connection, e, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
         }
 
-        private async Task<T> InternalGetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null) where T : class
+        private async Task<T> InternalGetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await Task.FromResult(InternalGetListAutoMap<T>(connection, id, null, transaction, commandTimeout, true, colsToSelect, includedProperties));
+            return await Task.FromResult(InternalGetListAutoMap<T>(connection, id, null, transaction, commandTimeout, true, colsToSelect, includedProperties, noLock));
         }
 
         private async Task<IEnumerable<T>> InternalGetListAutoMapAsync<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction,
-            int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null) where T : class
+            int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await Task.FromResult(InternalGetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, includedProperties));
+            return await Task.FromResult(InternalGetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock));
         }
 
         private async Task<IEnumerable<T>> InternalGetPageAutoMapAsync<T>(IDbConnection connection, object predicate, IList<ISort> sort, int page, int resultsPerPage,
-            IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null) where T : class
+            IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await Task.FromResult(InternalGetPageAutoMap<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties));
+            return await Task.FromResult(InternalGetPageAutoMap<T>(connection, predicate, sort, page, resultsPerPage, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock));
         }
 
         private async Task<IEnumerable<T>> InternalGetSetAsync<T>(IDbConnection connection, object predicate, IList<ISort> sort, int firstResult, int maxResults,
-            IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null) where T : class
+            IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
         {
-            return await Task.FromResult(InternalGetSet<T>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, colsToSelect, includedProperties));
+            return await Task.FromResult(InternalGetSet<T>(connection, predicate, sort, firstResult, maxResults, transaction, commandTimeout, buffered, colsToSelect, includedProperties, noLock));
         }
         #endregion
 
@@ -284,10 +283,10 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetList{T}"/>.
         /// </summary>
-        protected async Task<IEnumerable<T>> GetListAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null) where T : class
+        protected async Task<IEnumerable<T>> GetListAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
             var parameters = new Dictionary<string, object>();
-            var sql = SqlGenerator.Select(classMap, predicate, sort, parameters, colsToSelect);
+            var sql = SqlGenerator.Select(classMap, predicate, sort, parameters, colsToSelect, noLock:noLock);
             var dynamicParameters = new DynamicParameters();
             foreach (var parameter in parameters)
             {
@@ -297,9 +296,9 @@ namespace DapperExtensions
             return await connection.QueryAsync<T>(sql, dynamicParameters, transaction, commandTimeout, CommandType.Text).ConfigureAwait(false);
         }
 
-        protected async Task<IEnumerable<T>> GetListAutoMapAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null) where T : class
+        protected async Task<IEnumerable<T>> GetListAutoMapAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
-            var query = await GetListAsync<dynamic>(connection, classMap, predicate, sort, transaction, commandTimeout, colsToSelect);
+            var query = await GetListAsync<dynamic>(connection, classMap, predicate, sort, transaction, commandTimeout, colsToSelect, noLock);
             var data = query.ToList();
 
             return await Task.FromResult(AutoMapper.MapDynamic<T>(data, false)).ConfigureAwait(false);
@@ -308,10 +307,10 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetPage{T}"/>.
         /// </summary>
-        protected async Task<IEnumerable<T>> GetPageAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null) where T : class
+        protected async Task<IEnumerable<T>> GetPageAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
             var parameters = new Dictionary<string, object>();
-            var sql = SqlGenerator.SelectPaged(classMap, predicate, sort, page, resultsPerPage, parameters, colsToSelect);
+            var sql = SqlGenerator.SelectPaged(classMap, predicate, sort, page, resultsPerPage, parameters, colsToSelect, noLock:noLock);
             var dynamicParameters = new DynamicParameters();
             foreach (var parameter in parameters)
             {
@@ -324,9 +323,9 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetPage{T}"/>.
         /// </summary>
-        protected async Task<IEnumerable<T>> GetPageAutoMapAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null) where T : class
+        protected async Task<IEnumerable<T>> GetPageAutoMapAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
-            var query = await GetPageAsync<dynamic>(connection, classMap, predicate, sort, page, resultsPerPage, transaction, commandTimeout, colsToSelect);
+            var query = await GetPageAsync<dynamic>(connection, classMap, predicate, sort, page, resultsPerPage, transaction, commandTimeout, colsToSelect, noLock:noLock);
             var data = query.ToList();
 
             return await Task.FromResult(AutoMapper.MapDynamic<T>(data, false)).ConfigureAwait(false);
@@ -335,10 +334,10 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.GetSet{T}"/>.
         /// </summary>
-        protected async Task<IEnumerable<T>> GetSetAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null) where T : class
+        protected async Task<IEnumerable<T>> GetSetAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
             var parameters = new Dictionary<string, object>();
-            var sql = SqlGenerator.SelectSet(classMap, predicate, sort, firstResult, maxResults, parameters, colsToSelect);
+            var sql = SqlGenerator.SelectSet(classMap, predicate, sort, firstResult, maxResults, parameters, colsToSelect, noLock:noLock);
             var dynamicParameters = new DynamicParameters();
             foreach (var parameter in parameters)
             {

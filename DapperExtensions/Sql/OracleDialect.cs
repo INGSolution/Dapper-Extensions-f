@@ -149,7 +149,7 @@ namespace DapperExtensions.Sql
             conn.SetSessionInfo(info);
         }
 
-        public override string GetTableName(string schemaName, string tableName, string alias)
+        public override string GetTableName(string schemaName, string tableName, string alias, bool noLock = false)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
