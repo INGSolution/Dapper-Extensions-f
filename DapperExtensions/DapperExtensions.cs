@@ -15,7 +15,7 @@ namespace DapperExtensions
     {
         private readonly static object _lock = new object();
         private static Func<IDapperExtensionsConfiguration, IDapperImplementor> _instanceFactory;
-        private static IDapperImplementor _instance;
+        //private static IDapperImplementor _instance;
         private static IDapperExtensionsConfiguration _configuration;
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace DapperExtensions
         /// <param name="sqlDialect"></param>
         public static void Configure(this IDapperExtensionsConfiguration configuration)
         {
-            _instance = null;
+            //_instance = null;
             _configuration = configuration;
         }
 
