@@ -31,7 +31,7 @@ namespace DapperExtensions
         {
             private static Func<T, T> cloner;
             private static Func<T, T, List<Change>> differ;
-            private readonly T memberWiseClone;
+            private T memberWiseClone;
             private readonly T trackedObject;
 
             /// <summary>
@@ -67,7 +67,12 @@ namespace DapperExtensions
             /// <returns>The list of the fields changes in the object.</returns>
             public DynamicParameters Diff()
             {
-                return Diff(memberWiseClone, trackedObject);
+                var result = Diff(memberWiseClone, trackedObject);
+
+                if(memberWiseClone != null)
+                    memberWiseClone = Clone(trackedObject);
+
+                return result;
             }
 
             private static T Clone(T myObject)
