@@ -172,7 +172,7 @@ namespace DapperExtensions
         /// Executes a query for the specified id, returning the data typed as per T.
         /// </summary>
         public static async Task<(T, Snapshot<T>)> GetAsync<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : class
+            int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
             return await Instance.GetAsync<T>(connection, id, transaction, commandTimeout, buffered, null, changeTrack: changeTrack, noLock: noLock).ConfigureAwait(false);
         }
@@ -181,7 +181,7 @@ namespace DapperExtensions
         /// Executes a query for the specified id, returning the data typed as per T.
         /// </summary>
         public static async Task<(T, Snapshot<T>)> GetAsync<T>(this IDbConnection connection, PredicateGroup predicates, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : class
+            int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
             return await Instance.GetAsync<T>(connection, predicates, transaction, commandTimeout, buffered, null, changeTrack: changeTrack, noLock: noLock).ConfigureAwait(false);
         }
@@ -190,7 +190,7 @@ namespace DapperExtensions
         /// Executes a query for the specified id, returning the data typed as per T.
         /// </summary>
         public static async Task<TOut> GetPartialAsync<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class where TOut : class
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : BaseEntity where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
             TIn obj = await Instance.GetAsync<TIn>(connection, id, transaction, commandTimeout, buffered, cols, noLock: noLock).ConfigureAwait(false);
@@ -202,32 +202,32 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// </summary>
-        public static async Task<IEnumerable<T>> GetListAsync<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
+        public static async Task<(IEnumerable<T>, Snapshot<T>)> GetListAsync<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null,
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
-            return await Instance.GetListAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, null, noLock: noLock).ConfigureAwait(false);
+            return await Instance.GetListAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, null, changeTrack: changeTrack, noLock: noLock).ConfigureAwait(false);
         }
 
-        /// <summary>
-        /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per Linq Expression.
-        /// </summary>
-        public static async Task<IEnumerable<TOut>> GetPartialListAsync<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null,
-            IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class where TOut : class
-        {
-            var cols = GetBufferedCols<TOut>();
-            List<TIn> list = (await Instance.GetListAsync<TIn>(connection, predicate, sort, transaction, commandTimeout, buffered, cols, noLock: noLock)).ToList();
-            Func<TIn, TOut> f = func.Compile();
-            return list.Select(i => f.Invoke(i));
-        }
+        ///// <summary>
+        ///// Executes a select query using the specified predicate, returning an IEnumerable data typed as per Linq Expression.
+        ///// </summary>
+        //public static async Task<IEnumerable<TOut>> GetPartialListAsync<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null,
+        //    IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : BaseEntity where TOut : class
+        //{
+        //    var cols = GetBufferedCols<TOut>();
+        //    List<TIn> list = (await Instance.GetListAsync<TIn>(connection, predicate, sort, transaction, commandTimeout, buffered, cols, noLock: noLock)).ToList();
+        //    Func<TIn, TOut> f = func.Compile();
+        //    return list.Select(i => f.Invoke(i));
+        //}
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// Contains Slapper.Automaper
         /// </summary>
-        public static async Task<IEnumerable<T>> GetListAutoMapAsync<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null,
-            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
+        public static async Task<(IEnumerable<T>, Snapshot<T>)> GetListAutoMapAsync<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null,
+            IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, IList<IProjection> colsToSelect = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
-            return await Instance.GetListAutoMapAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, noLock: noLock).ConfigureAwait(false);
+            return await Instance.GetListAutoMapAsync<T>(connection, predicate, sort, transaction, commandTimeout, buffered, colsToSelect, changeTrack: changeTrack, noLock: noLock).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -253,7 +253,7 @@ namespace DapperExtensions
         /// Executes an update query for the specified entity.
         /// </summary>
         public static Task<bool> UpdateAsync<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : class
+            int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : BaseEntity
         {
             return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, null, snapshot);
         }
@@ -262,7 +262,7 @@ namespace DapperExtensions
         /// Executes an update query for the specified entity.
         /// </summary>
         public static Task<bool> UpdatePartialAsync<TIn, TOut>(this IDbConnection connection, TIn entity, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool ignoreAllKeyProperties = false) where TIn : class where TOut : class
+            int? commandTimeout = null, bool ignoreAllKeyProperties = false) where TIn : BaseEntity where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
             return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, cols);

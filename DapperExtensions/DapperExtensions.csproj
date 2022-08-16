@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netcoreapp3.1;net5.0;netstandard2.1;</TargetFrameworks>
+		<TargetFrameworks>netcoreapp3.1;net5.0;</TargetFrameworks>
 		<Version>1.7.0.6</Version>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<LangVersion>8.0</LangVersion>
@@ -17,7 +17,6 @@
 			<!--<file src="bin\Release\net461\$(AssemblyName).dll" target="lib\net461\$(AssemblyName).dll" />-->
 			<file src="bin\Release\netcoreapp3.1\$(AssemblyName).dll" target="lib\netcoreapp3.1\$(AssemblyName).dll" />
 			<file src="bin\Release\net5.0\$(AssemblyName).dll" target="lib\net5.0\$(AssemblyName).dll" />
-			<file src="bin\Release\netstandard2.1\$(AssemblyName).dll" target="lib\netstandard2.1\$(AssemblyName).dll" />
 		</files>
 		<Description>A small library that complements Dapper by adding basic CRUD operations (Get, Insert, Update, Delete) for your POCOs. For more advanced querying scenarios, Dapper Extensions provides a predicate system.</Description>
 		<Authors>ING</Authors>
@@ -80,6 +79,10 @@
 		<Compile Remove="Properties\**" />
 		<EmbeddedResource Remove="Properties\**" />
 		<None Remove="Properties\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Database.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
