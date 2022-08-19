@@ -136,7 +136,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T
         /// </summary>
-        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false, bool noLock = false) where T : class
+        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, dynamic id, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
             return ((T, Snapshot<T>))Instance.Get<T>(connection, id, transaction, commandTimeout, changeTrack: changeTrack, noLock: noLock);
         }
@@ -144,7 +144,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T
         /// </summary>
-        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, PredicateGroup predicate, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false, bool noLock = false) where T : class
+        public static (T, Snapshot<T>) Get<T>(this IDbConnection connection, PredicateGroup predicate, IDbTransaction transaction = null, int? commandTimeout = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
             return ((T, Snapshot<T>))Instance.Get<T>(connection, predicate, transaction, commandTimeout, changeTrack: changeTrack, noLock: noLock);
         }
@@ -152,7 +152,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a query for the specified id, returning the data typed as per T
         /// </summary>
-        public static TOut GetPartial<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null, bool noLock = false) where TIn : class where TOut : class
+        public static TOut GetPartial<TIn, TOut>(this IDbConnection connection, dynamic id, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null, bool noLock = false) where TIn : BaseEntity where TOut : class
         {
             return Instance.GetPartial<TIn, TOut>(connection, func, id, transaction, commandTimeout, noLock: noLock);
         }
@@ -179,7 +179,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes an update query for the specified entity.
         /// </summary>
-        public static bool Update<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : class
+        public static bool Update<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : BaseEntity
         {
             return Instance.Update(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, snapshot);
         }
@@ -187,7 +187,7 @@ namespace DapperExtensions
         /// <summary>
         /// Executes an update query for the specified entity.
         /// </summary>
-        public static void Update<T>(this IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false) where T : class
+        public static void Update<T>(this IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false) where T : BaseEntity
         {
             Instance.Update(connection, entities, transaction, commandTimeout, ignoreAllKeyProperties);
         }
@@ -235,15 +235,15 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// </summary>
-        public static IEnumerable<T> GetList<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
+        public static (IEnumerable<T>, Snapshot<T>)  GetList<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
-            return Instance.GetList<T>(connection, predicate, sort, transaction, commandTimeout, buffered, noLock:noLock);
+            return Instance.GetList<T>(connection, predicate, sort, transaction, commandTimeout, buffered, changeTrack: changeTrack, noLock:noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per LINq Expression.
         /// </summary>
-        public static IEnumerable<TOut> GetPartialList<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class
+        public static IEnumerable<TOut> GetPartialList<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : BaseEntity
         {
             return Instance.GetPartialList(connection, func, predicate, sort, transaction, commandTimeout, buffered, noLock: noLock);
 
@@ -252,15 +252,15 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T with relacionated classes.
         /// </summary>
-        public static IEnumerable<T> GetListAutoMap<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where T : class
+        public static (IEnumerable<T>, Snapshot<T>) GetListAutoMap<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
-            return Instance.GetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered, noLock: noLock);
+            return Instance.GetListAutoMap<T>(connection, predicate, sort, transaction, commandTimeout, buffered, changeTrack: changeTrack, noLock: noLock);
         }
 
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T with relacionated classes.
         /// </summary>
-        public static IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : class
+        public static IEnumerable<TOut> GetPartialListAutoMap<TIn, TOut>(this IDbConnection connection, Expression<Func<TIn, TOut>> func, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool noLock = false) where TIn : BaseEntity
         {
             return Instance.GetPartialListAutoMap(connection, func, predicate, sort, transaction, commandTimeout, buffered, noLock: noLock);
         }
