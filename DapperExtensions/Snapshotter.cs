@@ -76,9 +76,9 @@ namespace DapperExtensions
                 if (MemberWiseClone.TryGetValue(entity.Guid(), out T clone))
                 {
                     var result = Diff(clone, entity);
-                    clone = Clone(entity);
+                    MemberWiseClone[entity.Guid()] = Clone(entity);
                     return result;
-                }   
+                }
                 else 
                     return new DynamicParameters();
             }
