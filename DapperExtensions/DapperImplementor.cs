@@ -806,7 +806,8 @@ namespace DapperExtensions
 
         protected (T, Snapshot<T>) InternalGet<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
-            var result = InternalGetAutoMap<T>(connection, id, null, transaction, commandTimeout, true, colsToSelect, includedProperties, changeTrack, noLock);
+            Snapshot<T> snapshot;
+            var result = (IEnumerable<T>)InternalGetAutoMap<T>(connection, id, null, transaction, commandTimeout, true, colsToSelect, out snapshot, includedProperties, changeTrack, noLock);
 
             //if(changeTrack)
             //{
@@ -815,21 +816,23 @@ namespace DapperExtensions
             //}
 
             // changed from SingleOrDefault to FirstOrDefault
-            return (result.Item1.FirstOrDefault(), result.Item2);
+            return (result.FirstOrDefault(), snapshot);
         }
 
         protected (T, Snapshot<T>) InternalGetPredicate<T>(IDbConnection connection, object predicate, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
-            var (result, shot) = InternalGetAutoMapPredicate<T>(connection, predicate, null, transaction, commandTimeout, true, colsToSelect, includedProperties, changeTrack, noLock);
+            var (result, snapshot) = InternalGetAutoMapPredicate<T>(connection, predicate, null, transaction, commandTimeout, true, colsToSelect, includedProperties, changeTrack, noLock);
 
             // changed from SingleOrDefault to FirstOrDefault
-            return (result.FirstOrDefault(), shot);
+            return (result.FirstOrDefault(), snapshot);
         }
 
-        protected (IEnumerable<T>, Snapshot<T>) InternalGetAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
+        protected IEnumerable<T> InternalGetAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, out Snapshot<T> snapshot, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
             GetMapAndPredicate<T>(predicate, out var classMap, out var wherePredicate, true, false);
-            return GetListAutoMap<T>(connection, colsToSelect, classMap, wherePredicate, sort, transaction, commandTimeout, buffered, includedProperties, changeTrack:changeTrack, noLock:noLock);
+            var (result, shot) = GetListAutoMap<T>(connection, colsToSelect, classMap, wherePredicate, sort, transaction, commandTimeout, buffered, includedProperties, changeTrack:changeTrack, noLock:noLock);
+            snapshot = shot;
+            return result;
         }
 
         protected (IEnumerable<T>, Snapshot<T>) InternalGetAutoMapPredicate<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
