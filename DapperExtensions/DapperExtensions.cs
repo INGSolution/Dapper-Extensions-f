@@ -179,33 +179,33 @@ namespace DapperExtensions
         /// <summary>
         /// Executes an update query for the specified entity.
         /// </summary>
-        public static bool Update<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : BaseEntity
+        public static bool Update<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null, bool useUpdateLock = false) where T : BaseEntity
         {
-            return Instance.Update(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, snapshot);
+            return Instance.Update(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, snapshot, useUpdateLock);
         }
 
         /// <summary>
         /// Executes an update query for the specified entity.
         /// </summary>
-        public static void Update<T>(this IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false) where T : BaseEntity
+        public static void Update<T>(this IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : BaseEntity
         {
-            Instance.Update(connection, entities, transaction, commandTimeout, ignoreAllKeyProperties);
+            Instance.Update(connection, entities, transaction, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
         /// <summary>
         /// Executes some column an update query for the specified entity, as typed by LINq expresion
         /// </summary>
-        public static bool UpdatePartial<TIn, TOut>(this IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false) where TIn : class where TOut : class
+        public static bool UpdatePartial<TIn, TOut>(this IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where TIn : class where TOut : class
         {
-            return Instance.UpdatePartial(connection, entity, func, transaction, commandTimeout, ignoreAllKeyProperties);
+            return Instance.UpdatePartial(connection, entity, func, transaction, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
         /// <summary>
         /// Executes some column an update query for the specified entity, as typed by LINq expresion
         /// </summary>
-        public static void UpdatePartial<TIn, TOut>(this IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false) where TIn : class where TOut : class
+        public static void UpdatePartial<TIn, TOut>(this IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction = null, int? commandTimeout = null, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where TIn : class where TOut : class
         {
-            Instance.UpdatePartial(connection, entities, func, transaction, commandTimeout, ignoreAllKeyProperties);
+            Instance.UpdatePartial(connection, entities, func, transaction, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
         /// <summary>
@@ -235,9 +235,9 @@ namespace DapperExtensions
         /// <summary>
         /// Executes a select query using the specified predicate, returning an IEnumerable data typed as per T.
         /// </summary>
-        public static (IEnumerable<T>, Snapshot<T>)  GetList<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : BaseEntity
+        public static (IEnumerable<T>, Snapshot<T>) GetList<T>(this IDbConnection connection, object predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null, bool buffered = false, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
-            return Instance.GetList<T>(connection, predicate, sort, transaction, commandTimeout, buffered, changeTrack: changeTrack, noLock:noLock);
+            return Instance.GetList<T>(connection, predicate, sort, transaction, commandTimeout, buffered, changeTrack: changeTrack, noLock: noLock);
         }
 
         /// <summary>

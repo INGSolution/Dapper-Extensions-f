@@ -67,7 +67,7 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Update{T}(IDbConnection, T, IDbTransaction, int?)"/>.
         /// </summary>
-        Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, IList<IProjection> colsToUpdate = null, Snapshot<T> snapshot = null) where T : BaseEntity;
+        Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, IList<IProjection> colsToUpdate = null, Snapshot<T> snapshot = null, bool useUpdateLock = false) where T : BaseEntity;
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Delete{T}(IDbConnection, T, IDbTransaction, int?)"/>.
         /// </summary>
@@ -122,12 +122,12 @@ namespace DapperExtensions
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Update{T}(IDbConnection, T, IDbTransaction, int?)"/>.
         /// </summary>
-        public async Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate = null, Snapshot<T> snapshot = null) where T : BaseEntity
+        public async Task<bool> UpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate = null, Snapshot<T> snapshot = null, bool useUpdateLock = false) where T : BaseEntity
         {
-            if(colsToUpdate == null)
+            if (colsToUpdate == null)
                 colsToUpdate = GetChangeTrackCols<T>(snapshot, entity);
 
-            return await InternalUpdateAsync(connection, entity, transaction, colsToUpdate, commandTimeout, ignoreAllKeyProperties);
+            return await InternalUpdateAsync(connection, entity, transaction, colsToUpdate, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
         /// <summary>
         /// The asynchronous counterpart to <see cref="IDapperImplementor.Delete{T}(IDbConnection, T, IDbTransaction, int?)"/>.
@@ -234,25 +234,25 @@ namespace DapperExtensions
         }
 
         private async Task<bool> InternalUpdateAsync<T>(IDbConnection connection, T entity, IClassMapper classMap, IPredicate predicate, IDbTransaction transaction,
-            IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+            IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : class
         {
-            return await Task.FromResult(InternalUpdate(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties));
+            return await Task.FromResult(InternalUpdate(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock));
         }
 
         private async Task<bool> InternalUpdateAsync<T>(IDbConnection connection, T entity, IDbTransaction transaction, IList<IProjection> cols,
-            int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+            int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : class
         {
             GetMapAndPredicate<T>(entity, out var classMap, out var predicate, true);
-            return await InternalUpdateAsync(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
+            return await InternalUpdateAsync(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
         private async void InternalUpdateAsync<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, IList<IProjection> cols,
-            int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+            int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : class
         {
             GetMapAndPredicate<T>(entities.FirstOrDefault(), out var classMap, out var predicate, true);
 
             foreach (var e in entities)
-                await InternalUpdateAsync(connection, e, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
+                await InternalUpdateAsync(connection, e, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
         //private async Task<T> InternalGetAsync<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool noLock = false) where T : class
@@ -287,7 +287,7 @@ namespace DapperExtensions
         protected async Task<IEnumerable<T>> GetListAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
             var parameters = new Dictionary<string, object>();
-            var sql = SqlGenerator.Select(classMap, predicate, sort, parameters, colsToSelect, noLock:noLock);
+            var sql = SqlGenerator.Select(classMap, predicate, sort, parameters, colsToSelect, noLock: noLock);
             var dynamicParameters = new DynamicParameters();
             foreach (var parameter in parameters)
             {
@@ -311,7 +311,7 @@ namespace DapperExtensions
         protected async Task<IEnumerable<T>> GetPageAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
             var parameters = new Dictionary<string, object>();
-            var sql = SqlGenerator.SelectPaged(classMap, predicate, sort, page, resultsPerPage, parameters, colsToSelect, noLock:noLock);
+            var sql = SqlGenerator.SelectPaged(classMap, predicate, sort, page, resultsPerPage, parameters, colsToSelect, noLock: noLock);
             var dynamicParameters = new DynamicParameters();
             foreach (var parameter in parameters)
             {
@@ -326,7 +326,7 @@ namespace DapperExtensions
         /// </summary>
         protected async Task<IEnumerable<T>> GetPageAutoMapAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int page, int resultsPerPage, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
-            var query = await GetPageAsync<dynamic>(connection, classMap, predicate, sort, page, resultsPerPage, transaction, commandTimeout, colsToSelect, noLock:noLock);
+            var query = await GetPageAsync<dynamic>(connection, classMap, predicate, sort, page, resultsPerPage, transaction, commandTimeout, colsToSelect, noLock: noLock);
             var data = query.ToList();
 
             return await Task.FromResult(AutoMapper.MapDynamic<T>(data, false)).ConfigureAwait(false);
@@ -338,7 +338,7 @@ namespace DapperExtensions
         protected async Task<IEnumerable<T>> GetSetAsync<T>(IDbConnection connection, IClassMapper classMap, IPredicate predicate, IList<ISort> sort, int firstResult, int maxResults, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect = null, bool noLock = false) where T : class
         {
             var parameters = new Dictionary<string, object>();
-            var sql = SqlGenerator.SelectSet(classMap, predicate, sort, firstResult, maxResults, parameters, colsToSelect, noLock:noLock);
+            var sql = SqlGenerator.SelectSet(classMap, predicate, sort, firstResult, maxResults, parameters, colsToSelect, noLock: noLock);
             var dynamicParameters = new DynamicParameters();
             foreach (var parameter in parameters)
             {

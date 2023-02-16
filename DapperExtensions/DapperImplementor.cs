@@ -25,10 +25,10 @@ namespace DapperExtensions
         TOut GetPartial<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null, bool noLock = false) where TIn : BaseEntity where TOut : class;
         void Insert<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout) where T : class;
         dynamic Insert<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout) where T : class;
-        bool Update<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, Snapshot<T> snapshot = null) where T : BaseEntity;
-        void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties) where T : BaseEntity;
-        bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
-        void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties) where TIn : class;
+        bool Update<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, Snapshot<T> snapshot = null, bool useUpdateLock = false) where T : BaseEntity;
+        void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, bool useUpdateLock = false) where T : BaseEntity;
+        bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, bool useUpdateLock = false) where TIn : class;
+        void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties, bool useUpdateLock = false) where TIn : class;
         bool Delete<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout) where T : class;
         void Delete<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout) where T : class;
         bool Delete<T>(IDbConnection connection, object predicate, IDbTransaction transaction, int? commandTimeout) where T : class;
@@ -72,7 +72,7 @@ namespace DapperExtensions
         public TOut GetPartial<TIn, TOut>(IDbConnection connection, Expression<Func<TIn, TOut>> func, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IReferenceMap> includedProperties = null, bool noLock = false) where TIn : BaseEntity where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
-            var obj = InternalGet<TIn>(connection, id, transaction, commandTimeout, cols, includedProperties, noLock:noLock);
+            var obj = InternalGet<TIn>(connection, id, transaction, commandTimeout, cols, includedProperties, noLock: noLock);
             var f = func.Compile();
             return f.Invoke(obj);
         }
@@ -101,27 +101,27 @@ namespace DapperExtensions
             return InternalInsert(connection, entity, transaction, commandTimeout, classMap, nonIdentityKeyProperties, identityColumn, triggerIdentityColumn, sequenceIdentityColumn);
         }
 
-        public bool Update<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : BaseEntity
+        public bool Update<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null, bool useUpdateLock = false) where T : BaseEntity
         {
             var cols = GetChangeTrackCols<T>(snapshot, entity);
-            return InternalUpdate(connection, entity, transaction, cols, commandTimeout, ignoreAllKeyProperties);
+            return InternalUpdate(connection, entity, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
-        public void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : BaseEntity
+        public void Update<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : BaseEntity
         {
-            InternalUpdate(connection, entities, transaction, null, commandTimeout, ignoreAllKeyProperties);
+            InternalUpdate(connection, entities, transaction, null, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
-        public bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where TIn : class
-        {
-            var cols = GetBufferedCols<TOut>();
-            return InternalUpdate<TIn>(connection, entity, transaction, cols, commandTimeout, ignoreAllKeyProperties);
-        }
-
-        public void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false) where TIn : class
+        public bool UpdatePartial<TIn, TOut>(IDbConnection connection, TIn entity, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where TIn : class
         {
             var cols = GetBufferedCols<TOut>();
-            InternalUpdate<TIn>(connection, entities, transaction, cols, commandTimeout, ignoreAllKeyProperties);
+            return InternalUpdate<TIn>(connection, entity, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
+        }
+
+        public void UpdatePartial<TIn, TOut>(IDbConnection connection, IEnumerable<TIn> entities, Expression<Func<TIn, TOut>> func, IDbTransaction transaction, int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where TIn : class
+        {
+            var cols = GetBufferedCols<TOut>();
+            InternalUpdate<TIn>(connection, entities, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
         public bool Delete<T>(IDbConnection connection, T entity, IDbTransaction transaction, int? commandTimeout) where T : class
@@ -684,7 +684,7 @@ namespace DapperExtensions
             }
         }
 
-        private IDictionary<string, object> AddSequenceParameter<T>(IDbConnection connection, T entity, 
+        private IDictionary<string, object> AddSequenceParameter<T>(IDbConnection connection, T entity,
             IMemberMap key, DynamicParameters dynamicParameters, IDictionary<string, object> keyValues)
         {
             var query = $"select {key.SequenceName}.nextval seq from dual";
@@ -777,10 +777,10 @@ namespace DapperExtensions
             return keyValues;
         }
 
-        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IClassMapper classMap, IPredicate predicate, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IClassMapper classMap, IPredicate predicate, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : class
         {
             var parameters = new Dictionary<string, object>();
-            string sql = SqlGenerator.Update(classMap, predicate, parameters, ignoreAllKeyProperties, cols);
+            string sql = SqlGenerator.Update(classMap, predicate, parameters, ignoreAllKeyProperties, cols, useUpdateLock);
 
             var dynamicParameters = GetDynamicParameters(classMap, entity, true, cols);
 
@@ -790,18 +790,18 @@ namespace DapperExtensions
             return connection.Execute(sql, dynamicParameters, transaction, commandTimeout, CommandType.Text) > 0;
         }
 
-        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+        protected bool InternalUpdate<T>(IDbConnection connection, T entity, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : class
         {
             GetMapAndPredicate<T>(entity, out var classMap, out var predicate, true);
-            return InternalUpdate(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
+            return InternalUpdate(connection, entity, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
-        protected void InternalUpdate<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false) where T : class
+        protected void InternalUpdate<T>(IDbConnection connection, IEnumerable<T> entities, IDbTransaction transaction, IList<IProjection> cols, int? commandTimeout, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where T : class
         {
             GetMapAndPredicate<T>(entities.FirstOrDefault(), out var classMap, out var predicate, true);
 
             foreach (var e in entities)
-                InternalUpdate(connection, e, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties);
+                InternalUpdate(connection, e, classMap, predicate, transaction, cols, commandTimeout, ignoreAllKeyProperties, useUpdateLock);
         }
 
         protected (T, Snapshot<T>) InternalGet<T>(IDbConnection connection, dynamic id, IDbTransaction transaction, int? commandTimeout, IList<IProjection> colsToSelect, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
@@ -830,7 +830,7 @@ namespace DapperExtensions
         protected IEnumerable<T> InternalGetAutoMap<T>(IDbConnection connection, object predicate, IList<ISort> sort, IDbTransaction transaction, int? commandTimeout, bool buffered, IList<IProjection> colsToSelect, out Snapshot<T> snapshot, IList<IReferenceMap> includedProperties = null, bool changeTrack = false, bool noLock = false) where T : BaseEntity
         {
             GetMapAndPredicate<T>(predicate, out var classMap, out var wherePredicate, true, false);
-            var (result, shot) = GetListAutoMap<T>(connection, colsToSelect, classMap, wherePredicate, sort, transaction, commandTimeout, buffered, includedProperties, changeTrack:changeTrack, noLock:noLock);
+            var (result, shot) = GetListAutoMap<T>(connection, colsToSelect, classMap, wherePredicate, sort, transaction, commandTimeout, buffered, includedProperties, changeTrack: changeTrack, noLock: noLock);
             snapshot = shot;
             return result;
         }

@@ -253,19 +253,19 @@ namespace DapperExtensions
         /// Executes an update query for the specified entity.
         /// </summary>
         public static Task<bool> UpdateAsync<T>(this IDbConnection connection, T entity, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null) where T : BaseEntity
+            int? commandTimeout = null, bool ignoreAllKeyProperties = false, Snapshot<T> snapshot = null, bool useUpdateLock = false) where T : BaseEntity
         {
-            return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, null, snapshot);
+            return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, null, snapshot, useUpdateLock);
         }
 
         /// <summary>
         /// Executes an update query for the specified entity.
         /// </summary>
         public static Task<bool> UpdatePartialAsync<TIn, TOut>(this IDbConnection connection, TIn entity, IDbTransaction transaction = null,
-            int? commandTimeout = null, bool ignoreAllKeyProperties = false) where TIn : BaseEntity where TOut : class
+            int? commandTimeout = null, bool ignoreAllKeyProperties = false, bool useUpdateLock = false) where TIn : BaseEntity where TOut : class
         {
             var cols = GetBufferedCols<TOut>();
-            return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, cols);
+            return Instance.UpdateAsync(connection, entity, transaction, commandTimeout, ignoreAllKeyProperties, cols, useUpdateLock: useUpdateLock);
         }
 
         /// <summary>

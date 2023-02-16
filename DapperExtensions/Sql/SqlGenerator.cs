@@ -21,7 +21,7 @@ namespace DapperExtensions.Sql
         string Count(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, IList<IReferenceMap> includedProperties = null, bool noLock = false);
 
         string Insert(IClassMapper classMap);
-        string Update(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate);
+        string Update(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate, bool useUpdateLock = false);
         string Delete(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters);
 
         string IdentitySql(IClassMapper classMap);
@@ -258,7 +258,7 @@ namespace DapperExtensions.Sql
             return sql;
         }
 
-        public virtual string Update(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate)
+        public virtual string Update(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters, bool ignoreAllKeyProperties, IList<IProjection> colsToUpdate, bool useUpdateLock = false)
         {
             if (predicate == null)
             {
@@ -299,7 +299,7 @@ namespace DapperExtensions.Sql
                 .Where(c => colsToUpdate == null || colsToUpdate?.Any(cu => cu.PropertyName.Equals(c.Property.Name, StringComparison.OrdinalIgnoreCase)) == true) // Use Property.Name instead of ColumnName
                 .Select(p => $"{GetColumnName(p, false, false)} = {p.SimpleAlias}");
 
-            return $"UPDATE {GetTableName(classMap)} SET {setSql.AppendStrings()} WHERE {predicate.GetSql(this, parameters, true)}";
+            return $"UPDATE {GetTableName(classMap)}{(useUpdateLock ? " with (updlock)" : "")} SET {setSql.AppendStrings()} WHERE {predicate.GetSql(this, parameters, true)}";
         }
 
         public virtual string Delete(IClassMapper classMap, IPredicate predicate, IDictionary<string, object> parameters)
